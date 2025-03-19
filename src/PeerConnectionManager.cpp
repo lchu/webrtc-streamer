@@ -11,6 +11,7 @@
 #include <fstream>
 #include <utility>
 #include <functional>
+#include <libudev.h>
 
 #include "api/video_codecs/builtin_video_decoder_factory.h"
 #include "api/video_codecs/builtin_video_encoder_factory.h"
@@ -344,6 +345,13 @@ PeerConnectionManager::PeerConnectionManager(const std::list<std::string> &iceSe
 		}
 		return std::make_tuple(200, std::map<std::string,std::string>(), answer);
 	};
+
+    	// 新增配置解析（在构造函数末尾）
+    	if (m_config.isMember("videoDeviceFilter")) {
+        	Json::Value filter = m_config["videoDeviceFilter"];
+        	m_vendorId = filter.get("vendorId", "").asString();
+        	m_productId = filter.get("productId", "").asString();
+    	}
 }
 
 /* ---------------------------------------------------------------------------
@@ -462,6 +470,27 @@ const Json::Value PeerConnectionManager::getMediaList()
 	Json::Value value(Json::arrayValue);
 
 	const std::list<std::string> videoCaptureDevice = CapturerFactory::GetVideoCaptureDeviceList(m_publishFilter, m_useNullCodec);
+	videoCaptureDevice.remove_if([this](const std::string& dev) {
+        	// 提取设备路径（示例："MacroSilicon USB Video (/dev/video0)"）
+        	size_t pos = dev.find("(");
+        	if(pos == std::string::npos) return true;
+        	std::string device_path = dev.substr(pos+1, dev.find(")")-pos-1);
+
+        	// 通过udev查询设备属性
+        	struct udev *udev = udev_new();
+        	struct udev_device *device = udev_device_new_from_subsystem_sysname(udev, "video4linux", device_path.substr(strlen("/dev/")).c_str());
+        	device = udev_device_get_parent_with_subsystem_devtype(device, "usb", "usb_device");
+        
+        	const char *idVendor = udev_device_get_sysattr_value(device, "idVendor");
+        	const char *idProduct = udev_device_get_sysattr_value(device, "idProduct");
+        
+        	udev_device_unref(device);
+        	udev_unref(udev);
+
+        	// 匹配目标设备的VID/PID
+        	return !(idVendor && idProduct && strcasecmp(idVendor, m_vendorId.c_str()) == 0 && strcasecmp(idProduct, m_productId.c_str()) == 0);
+    	});
+	
 	for (auto videoDevice : videoCaptureDevice)
 	{
 		Json::Value media;
