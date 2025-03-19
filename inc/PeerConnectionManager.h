@@ -379,5 +379,9 @@ class PeerConnectionManager {
 		bool                                                                      m_usePlanB;
 		int                                                                       m_maxpc;
 		webrtc::PeerConnectionInterface::IceTransportsType                        m_transportType;
+
+		std::string m_vendorId;    // 厂商ID
+    		std::string m_productId;   // 产品ID
+    		std::map<std::string, std::string> m_videoaudiomap;
 };
 
