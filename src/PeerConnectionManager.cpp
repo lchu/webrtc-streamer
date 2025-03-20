@@ -469,27 +469,27 @@ const Json::Value PeerConnectionManager::getMediaList()
 {
 	Json::Value value(Json::arrayValue);
 
+	// 新增过滤条件检查
+    bool hasValidFilter = !m_vendorId.empty() && !m_productId.empty();
+    if (!hasValidFilter) {
+        RTC_LOG(LS_WARNING) << "Device filter not configured, showing all devices";
+    }
+
 	std::list<std::string> videoCaptureDevice = CapturerFactory::GetVideoCaptureDeviceList(m_publishFilter, m_useNullCodec);
-	videoCaptureDevice.remove_if([this](const std::string& dev) {
-        	// 提取设备路径（示例："MacroSilicon USB Video (/dev/video0)"）
-        	size_t pos = dev.find("(");
-        	if(pos == std::string::npos) return true;
-        	std::string device_path = dev.substr(pos+1, dev.find(")")-pos-1);
-
-        	// 通过udev查询设备属性
-        	struct udev *udev = udev_new();
-        	struct udev_device *device = udev_device_new_from_subsystem_sysname(udev, "video4linux", device_path.substr(strlen("/dev/")).c_str());
-        	device = udev_device_get_parent_with_subsystem_devtype(device, "usb", "usb_device");
+	videoCaptureDevice.remove_if([this, hasValidFilter](const std::string& dev) {
+        if (!hasValidFilter) return false;
         
-        	const char *idVendor = udev_device_get_sysattr_value(device, "idVendor");
-        	const char *idProduct = udev_device_get_sysattr_value(device, "idProduct");
-        
-        	udev_device_unref(device);
-        	udev_unref(udev);
-
-        	// 匹配目标设备的VID/PID
-        	return !(idVendor && idProduct && strcasecmp(idVendor, m_vendorId.c_str()) == 0 && strcasecmp(idProduct, m_productId.c_str()) == 0);
-    	});
+        try {
+            size_t pos = dev.find("(");
+            if(pos == std::string::npos) return true;
+            
+            std::string devicePath = dev.substr(pos+1, dev.find(")", pos)-pos-1);
+            return !checkDeviceIds(devicePath, m_vendorId, m_productId);
+        } catch (const std::exception& e) {
+            RTC_LOG(LS_ERROR) << "Device filter error: " << e.what() << " on device: " << dev;
+            return true; // 异常情况下过滤设备
+        }
+    });
 	
 	for (auto videoDevice : videoCaptureDevice)
 	{
@@ -608,6 +608,53 @@ const Json::Value PeerConnectionManager::getIceServers(const std::string &client
 	}
 
 	return iceServers;
+}
+
+/* ---------------------------------------------------------------------------
+**  check Device Id and return true if match（Device Id from config.json and linux system）
+** -------------------------------------------------------------------------*/
+bool PeerConnectionManager::checkDeviceIds(const std::string& devicePath, const std::string& targetVendor, const std::string& targetProduct) {
+	try {
+		struct udev *udev = udev_new();
+		if (!udev) throw std::runtime_error("Failed to create udev context");
+
+		// 提取设备名称（如从/dev/video0提取video0）
+		std::string devName = devicePath.substr(strlen("/dev/"));
+		struct udev_device *device = udev_device_new_from_subsystem_sysname(udev, "video4linux", devName.c_str());
+		if (!device) {
+			udev_unref(udev);
+			throw std::runtime_error("Device not found: " + devicePath);
+		}
+
+		device = udev_device_get_parent_with_subsystem_devtype(device, "usb", "usb_device");
+		if (!device) {
+			udev_device_unref(device);
+			udev_unref(udev);
+			throw std::runtime_error("No parent USB device");
+		}
+
+		const char *idVendor = udev_device_get_sysattr_value(device, "idVendor");
+		const char *idProduct = udev_device_get_sysattr_value(device, "idProduct");
+
+		udev_device_unref(device);
+		udev_unref(udev);
+
+		if (!idVendor || !idProduct) {
+			throw std::runtime_error("Missing VID/PID attributes");
+		}
+
+		bool match = (strcasecmp(idVendor, targetVendor.c_str()) == 0) && (strcasecmp(idProduct, targetProduct.c_str()) == 0);
+
+		RTC_LOG(LS_INFO) << "Device " << devicePath 
+				<< " VID:" << (idVendor?idVendor:"NULL")
+				<< " PID:" << (idProduct?idProduct:"NULL")
+				<< " Match:" << (match?"YES":"NO");
+		return match;
+
+	} catch (const std::exception& e) {
+		RTC_LOG(LS_ERROR) << "Device check error: " << e.what();
+		return false;
+	}
 }
 
 /* ---------------------------------------------------------------------------
@@ -1244,6 +1291,26 @@ const std::string PeerConnectionManager::sanitizeLabel(const std::string &label)
 bool PeerConnectionManager::AddStreams(webrtc::PeerConnectionInterface *peer_connection, const std::string &videourl, const std::string &audiourl, const std::string &options)
 {
 	bool ret = false;
+
+	// check vendorID and productID
+    if (!videourl.empty() ) {
+        try {
+            size_t pos = videourl.find("(");
+            if(pos != std::string::npos) {
+                std::string devicePath = videourl.substr(pos+1, videourl.find(")", pos)-pos-1);
+                
+                if (!m_vendorId.empty() && !m_productId.empty() && 
+                    !checkDeviceIds(devicePath, m_vendorId, m_productId)) 
+                {
+                    RTC_LOG(LS_ERROR) << "Device " << devicePath << " VID/PID mismatch!";
+                    return ret;
+                }
+            }
+        } catch (const std::exception& e) {
+            RTC_LOG(LS_ERROR) << "Device validation failed: " << e.what();
+            return ret;
+        }
+    }
 
 	// compute options
 	std::string optstring = options;
