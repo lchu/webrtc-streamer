@@ -353,6 +353,7 @@ class PeerConnectionManager {
 		std::unique_ptr<webrtc::SessionDescriptionInterface>  getAnswer(const std::string & peerid, const std::string & sdpoffer, const std::string & videourl, const std::string & audiourl, const std::string & options, bool waitgatheringcompletion = false);
 		std::unique_ptr<webrtc::SessionDescriptionInterface>  getAnswer(const std::string & peerid, webrtc::SessionDescriptionInterface *session_description, const std::string & videourl, const std::string & audiourl, const std::string & options, bool waitgatheringcompletion = false);
 		std::string                                           getOldestPeerCannection();
+		bool 						      checkDeviceIds(const std::string& devicePath, const std::string& targetVendor, const std::string& targetProduct);
 
 
 	protected:
@@ -382,6 +383,5 @@ class PeerConnectionManager {
 
 		std::string m_vendorId;    // 厂商ID
     		std::string m_productId;   // 产品ID
-    		std::map<std::string, std::string> m_usbdevicemap;
 };
 
