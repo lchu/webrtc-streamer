@@ -202,13 +202,6 @@ FILE(GLOB SOURCE src/*.cpp)
 add_executable (${CMAKE_PROJECT_NAME} ${SOURCE} ${WEBRTCEXTRAOBJS})
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE inc) 
 
-target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE
-    ${WEBRTC_LIBS_INFO}  
-    pthread              # -lpthread
-    rt                   # -lrt
-    udev                 # udev
-)
-
 # webrtc 
 set (WEBRTCINCLUDE ${WEBRTCROOT}/src ${WEBRTCROOT}/src/third_party/abseil-cpp ${WEBRTCROOT}/src/third_party/jsoncpp/source/include  ${WEBRTCROOT}/src/third_party/jsoncpp/generated ${WEBRTCROOT}/src/third_party/libyuv/include)
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE ${WEBRTCINCLUDE})
@@ -297,6 +290,13 @@ else()
     include_directories("libv4l2cpp/inc")
     add_library(libv4l2cpp STATIC ${LIBSRC_FILES})
     target_link_libraries (${CMAKE_PROJECT_NAME} libv4l2cpp) 
+
+    # udev
+    target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE
+        ${WEBRTC_LIBS_INFO}  
+        rt                   
+        udev
+    )
 
     # webrtc
     add_definitions(-DWEBRTC_POSIX -fno-rtti)
