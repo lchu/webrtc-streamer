@@ -469,7 +469,7 @@ const Json::Value PeerConnectionManager::getMediaList()
 {
 	Json::Value value(Json::arrayValue);
 
-	const std::list<std::string> videoCaptureDevice = CapturerFactory::GetVideoCaptureDeviceList(m_publishFilter, m_useNullCodec);
+	std::list<std::string> videoCaptureDevice = CapturerFactory::GetVideoCaptureDeviceList(m_publishFilter, m_useNullCodec);
 	videoCaptureDevice.remove_if([this](const std::string& dev) {
         	// 提取设备路径（示例："MacroSilicon USB Video (/dev/video0)"）
         	size_t pos = dev.find("(");
