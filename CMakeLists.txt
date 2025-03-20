@@ -292,11 +292,7 @@ else()
     target_link_libraries (${CMAKE_PROJECT_NAME} libv4l2cpp) 
 
     # udev
-    target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE
-        ${WEBRTC_LIBS_INFO}  
-        rt                   
-        udev
-    )
+    target_link_libraries(${CMAKE_PROJECT_NAME} rt udev)
 
     # webrtc
     add_definitions(-DWEBRTC_POSIX -fno-rtti)
