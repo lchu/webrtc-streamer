@@ -382,6 +382,6 @@ class PeerConnectionManager {
 
 		std::string m_vendorId;    // 厂商ID
     		std::string m_productId;   // 产品ID
-    		std::map<std::string, std::string> m_videoaudiomap;
+    		std::map<std::string, std::string> m_usbdevicemap;
 };
 
