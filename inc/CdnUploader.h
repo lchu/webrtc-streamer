@@ -1,5 +1,16 @@
+#include <string>
 #include <mutex>
+#include <regex>
+#include <thread>
+#include <future>
 #include <atomic>
+
+#include "api/peer_connection_interface.h"
+#include "api/video_codecs/video_decoder_factory.h"
+#include "p2p/client/basic_port_allocator.h"
+#include "modules/audio_device/include/audio_device.h"
+#include "rtc_base/logging.h"
+#include "rtc_base/strings/json.h"
 
 
 class CdnUploader : public rtc::VideoSinkInterface<webrtc::VideoFrame> {
