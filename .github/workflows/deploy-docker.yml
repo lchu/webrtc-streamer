@@ -1,6 +1,6 @@
 name: Deploy docker
 
-on: [push]
+on: [deploy]
 
 jobs:
   build:

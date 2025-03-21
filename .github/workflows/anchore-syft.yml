@@ -14,7 +14,7 @@
 name: Anchore Syft SBOM scan
 
 on:
-  push:
+  anchore:
     branches: [ "master" ]
 
 permissions:

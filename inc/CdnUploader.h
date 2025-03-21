@@ -1,8 +1,8 @@
 #include <mutex>
 #include <atomic>
 extern "C" {
-#include <libavcodec/avcodec.h>
-#include <libavformat/avformat.h>
+#include <avcodec.h>
+#include <avformat.h>
 }
 
 class CdnUploader : public rtc::VideoSinkInterface<webrtc::VideoFrame> {

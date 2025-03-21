@@ -1,6 +1,6 @@
 name: trivy
 on:
-  push:
+  trivy:
     branches:
       - master
   pull_request:

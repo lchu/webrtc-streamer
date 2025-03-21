@@ -1,6 +1,6 @@
 name: C/C++ CI linux cross armv6/armv7/arm64
 
-on: [push]
+on: [cross]
 
 jobs:
   build:
