@@ -1,9 +1,6 @@
 #include "CdnUploader.h"
 #include "rtc_base/logging.h"
 
-extern "C" {
-#include <swscale.h>
-}
 
 CdnUploader::CdnUploader(const Json::Value & config) {
     LoadConfig(config);

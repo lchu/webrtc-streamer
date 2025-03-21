@@ -1,9 +1,10 @@
 #include <mutex>
 #include <atomic>
-extern "C" {
-#include <avcodec.h>
-#include <avformat.h>
-}
+// Update FFmpeg includes to use proper directory structure
+#include <libavcodec/avcodec.h>
+#include <libavformat/avformat.h>
+#include <libswscale/swscale.h>
+#include <libavutil/imgutils.h>
 
 class CdnUploader : public rtc::VideoSinkInterface<webrtc::VideoFrame> {
 public:
