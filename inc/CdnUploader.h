@@ -1,10 +1,6 @@
 #include <mutex>
 #include <atomic>
-// Update FFmpeg includes to use proper directory structure
-#include <libavcodec/avcodec.h>
-#include <libavformat/avformat.h>
-#include <libswscale/swscale.h>
-#include <libavutil/imgutils.h>
+
 
 class CdnUploader : public rtc::VideoSinkInterface<webrtc::VideoFrame> {
 public:
@@ -24,9 +20,7 @@ private:
     // 配置加载
     bool LoadConfig(const Json::Value & config);
 
-    // FFmpeg资源
-    AVFormatContext* m_outputContext = nullptr;
-    AVCodecContext* m_codecContext = nullptr;
+
     int m_videoStreamIndex = -1;
     
     // 状态控制
