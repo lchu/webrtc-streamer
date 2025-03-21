@@ -1,11 +1,11 @@
 #include "CdnUploader.h"
 #include "rtc_base/logging.h"
 // Update FFmpeg includes to use proper directory structure
-#include "avutil.h"
-#include "avcodec.h"
-#include "avformat.h"
-#include "swscale.h"
-#include "imgutils.h"
+#include "third_party/ffmpeg/libavutil/avutil.h"
+#include "third_party/ffmpeg/libavcodec/avcodec.h"
+#include "third_party/ffmpeg/libavformat/avformat.h"
+#include "third_party/ffmpeg/libswscale/swscale.h"
+#include "third_party/ffmpeg/libavutil/imgutils.h"
 
 // FFmpeg资源
 AVFormatContext* m_outputContext = nullptr;
