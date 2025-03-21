@@ -26,6 +26,7 @@
 #include "rtc_base/strings/json.h"
 
 #include "HttpServerRequestHandler.h"
+#include "CdnUploader.h"
 
 class PeerConnectionManager {
 	class VideoSink : public rtc::VideoSinkInterface<webrtc::VideoFrame> {
@@ -353,8 +354,7 @@ class PeerConnectionManager {
 		std::unique_ptr<webrtc::SessionDescriptionInterface>  getAnswer(const std::string & peerid, const std::string & sdpoffer, const std::string & videourl, const std::string & audiourl, const std::string & options, bool waitgatheringcompletion = false);
 		std::unique_ptr<webrtc::SessionDescriptionInterface>  getAnswer(const std::string & peerid, webrtc::SessionDescriptionInterface *session_description, const std::string & videourl, const std::string & audiourl, const std::string & options, bool waitgatheringcompletion = false);
 		std::string                                           getOldestPeerCannection();
-		bool 						      checkDeviceIds(const std::string& devicePath, const std::string& targetVendor, const std::string& targetProduct);
-
+		bool 												  checkDeviceIds(const std::string& devicePath, const std::string& targetVendor, const std::string& targetProduct);
 
 	protected:
 		std::unique_ptr<rtc::Thread>                                              m_signalingThread;
@@ -381,7 +381,8 @@ class PeerConnectionManager {
 		int                                                                       m_maxpc;
 		webrtc::PeerConnectionInterface::IceTransportsType                        m_transportType;
 
-		std::string m_vendorId;    // 厂商ID
-    		std::string m_productId;   // 产品ID
+		std::string m_vendorId;    // vender ID
+    	std::string m_productId;   // product ID
+		std::unique_ptr<CdnUploader> 			m_cdnUploader; // CDN uploader
 };
 

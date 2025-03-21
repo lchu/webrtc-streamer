@@ -235,7 +235,8 @@ PeerConnectionManager::PeerConnectionManager(const std::list<std::string> &iceSe
 	  m_useNullCodec(useNullCodec), 
 	  m_usePlanB(usePlanB),
 	  m_maxpc(maxpc),
-	  m_transportType(transportType)
+	  m_transportType(transportType),
+	  m_cdnUploader(config)
 {
 	m_workerThread->SetName("worker", NULL);
 	m_workerThread->Start();
@@ -1291,6 +1292,8 @@ const std::string PeerConnectionManager::sanitizeLabel(const std::string &label)
 bool PeerConnectionManager::AddStreams(webrtc::PeerConnectionInterface *peer_connection, const std::string &videourl, const std::string &audiourl, const std::string &options)
 {
 	bool ret = false;
+	RTC_LOG(LS_INFO) << "videourl" << videourl;
+	RTC_LOG(LS_INFO) << "audiourl" << audiourl;
 
 	// check vendorID and productID
     if (!videourl.empty() ) {
