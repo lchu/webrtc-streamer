@@ -21,7 +21,7 @@ jobs:
     - run: git fetch --prune --unshallow --tags
 
     - name: pkg
-      run: sudo apt-get update && sudo apt-get install -y --no-install-recommends g++ autoconf automake libtool xz-utils libasound2-dev libpulse-dev libgtk-3-dev libudev-dev cmake p7zip-full
+      run: sudo apt-get update && sudo apt-get install -y --no-install-recommends g++ autoconf automake libtool xz-utils libasound2-dev libpulse-dev libgtk-3-dev cmake p7zip-full
 
     - name: depot_tools
       run: |
@@ -37,6 +37,8 @@ jobs:
 
     - name: build
       run: |
+          # 保留配置日志
+          (cd webrtc/src/third_party/ffmpeg && ./configure ${CONFIGURE_ARGS}) | tee ffbuild/config.log
           export PATH=$(pwd)/webrtc/src/third_party/llvm-build/Release+Asserts/bin:$PATH
           cmake -DWEBRTCROOT=$(pwd)/webrtc -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=${{ matrix.buildtype }} .
           make
