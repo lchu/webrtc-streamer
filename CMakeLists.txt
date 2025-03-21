@@ -105,17 +105,6 @@ if (NOT EXISTS ${WEBRTCOBJS}/${CMAKE_STATIC_LIBRARY_PREFIX}webrtc${CMAKE_STATIC_
 
   else()
     set (CONFIGURE_ARGS --disable-everything --disable-all --disable-doc --disable-htmlpages --disable-manpages --disable-podpages --disable-txtpages --disable-static --enable-swscale --enable-avcodec --enable-avformat --enable-avutil --enable-static --enable-libopus --disable-debug --disable-bzlib --disable-iconv --disable-network --disable-schannel --disable-sdl2 --disable-symver --disable-xlib --disable-zlib --disable-securetransport --disable-faan --disable-alsa --disable-autodetect --disable-error-resilience --enable-decoder=vorbis,libopus,flac --enable-decoder=pcm_u8,pcm_s16le,pcm_s24le,pcm_s32le,pcm_f32le,mp3 --enable-decoder=pcm_s16be,pcm_s24be,pcm_mulaw,pcm_alaw --enable-demuxer=ogg,matroska,wav,flac,mp3,mov --enable-parser=opus,vorbis,flac,mpegaudio,vp9 --extra-cflags=-I${WEBRTCROOT}/src/third_party/opus/src/include --disable-linux-perf --x86asmexe=nasm --optflags="-O2" --arch=arm --enable-armv6 --disable-armv6t2 --enable-vfp --disable-thumb --extra-cflags=-march=armv6 --enable-cross-compile --target-os=linux --extra-cflags=--target=arm-linux-gnueabihf --extra-ldflags=--target=arm-linux-gnueabihf --sysroot=${WEBRTCROOT}/src/build/linux/debian_bullseye_armhf-sysroot --extra-cflags=-mtune=cortex-a8 --extra-cflags=-mfloat-abi=hard --extra-cflags=-O2 --disable-neon --extra-cflags=-mfpu=vfpv3-d16 --enable-pic --cc=clang --cxx=clang++ --ld=clang --extra-ldflags=-fuse-ld=lld --enable-decoder=aac,h264 --enable-demuxer=aac --enable-parser=aac,h264)
-    MESSAGE("CONFIGURE_ARGS = ${CONFIGURE_ARGS}")
-    // 添加配置结果检查
-    EXECUTE_PROCESS(
-    WORKING_DIRECTORY ${WEBRTCROOT}/src/third_party/ffmpeg 
-    COMMAND ./configure ${CONFIGURE_ARGS}
-    RESULT_VARIABLE CONFIGURE_RESULT
-    )
-    
-    if(NOT CONFIGURE_RESULT EQUAL 0)
-    message(FATAL_ERROR "FFmpeg configure failed with code ${CONFIGURE_RESULT}")
-    endif()
     
     # 修正文件复制路径（添加chromium/config层级）
     set(CONFIG_DIR "${WEBRTCROOT}/src/third_party/ffmpeg/chromium/config/Chrome/linux/arm")
