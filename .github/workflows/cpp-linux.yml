@@ -57,7 +57,7 @@ jobs:
            --extra-cflags="-std=c11 --target=arm-linux-gnueabihf" \  # 新增C11标准
            --extra-ldflags="--target=arm-linux-gnueabihf" \
            --enable-pic \
-           ${CONFIGURE_ARGS} ) 2>&1 | tee ffbuild/config.log  # 确保日志输出
+           ${CONFIGURE_ARGS} ) 2>&1  # 确保日志输出
 
           # 添加配置验证
           if [ -f webrtc/src/third_party/ffmpeg/ffbuild/config.log ]; then
