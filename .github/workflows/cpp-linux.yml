@@ -48,12 +48,11 @@ jobs:
     - name: build
       run: |
           export CONFIGURE_ARGS="--disable-x86asm --disable-asm --arch=arm --enable-cross-compile --target-os=linux --enable-pic --cc=clang --cxx=clang++ --ld=clang"
-
           export PATH=$(pwd)/webrtc/src/third_party/llvm-build/Release+Asserts/bin:$PATH
           sudo apt-get install -y binutils-arm-linux-gnueabihf gcc-arm-linux-gnueabihf
 
            # 更新工具链参数
-          export CLANG_FLAGS="--target=arm-linux-gnueabihf --sysroot=${PWD}/webrtc/src/build/linux/debian_bullseye_arm-sysroot -B${PWD}/webrtc/src/build/linux/debian_bullseye_arm-sysroot/usr/lib/gcc"
+          export CLANG_FLAGS="--target=arm-linux-gnueabihf --sysroot=${PWD}/webrtc/src/build/linux/debian_bullseye_arm-sysroot -B${PWD}/webrtc/src/build/linux/debian_bullseye_arm-sysroot/usr/lib/gcc -march=armv7-a -mfpu=neon -mfloat-abi=hard"
 
           # 新增：创建配置日志目录
           mkdir -p webrtc/src/third_party/ffmpeg/ffbuild

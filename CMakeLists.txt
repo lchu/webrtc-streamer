@@ -10,6 +10,11 @@ set(CMAKE_CXX_COMPILER_TARGET arm-linux-gnueabihf)
 # 禁用编译器测试中的链接步骤
 set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
 
+if(CMAKE_SYSTEM_PROCESSOR MATCHES "armv7")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -march=armv7-a -mfpu=neon -mfloat-abi=hard" CACHE INTERNAL "")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=armv7-a -mfpu=neon -mfloat-abi=hard" CACHE INTERNAL "")
+endif()
+
 project (webrtc-streamer)
 
 set (WEBRTCROOT "${CMAKE_CURRENT_SOURCE_DIR}/../webrtc" CACHE STRING "WEBRTC root directory")
