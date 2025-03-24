@@ -37,6 +37,8 @@ jobs:
 
     - name: build
       run: |
+          export CONFIGURE_ARGS="--disable-x86asm --disable-asm --arch=arm --enable-cross-compile --target-os=linux --enable-pic --cc=clang --cxx=clang++ --ld=clang"
+
           export PATH=$(pwd)/webrtc/src/third_party/llvm-build/Release+Asserts/bin:$PATH
           sudo apt-get install -y binutils-arm-linux-gnueabihf gcc-arm-linux-gnueabihf
 
@@ -56,6 +58,13 @@ jobs:
            --extra-ldflags="--target=arm-linux-gnueabihf" \
            --enable-pic \
            ${CONFIGURE_ARGS} ) 2>&1 | tee ffbuild/config.log  # 确保日志输出
+
+          # 添加配置验证
+          if [ -f webrtc/src/third_party/ffmpeg/ffbuild/config.log ]; then
+              echo "Configure succeeded"
+          else
+              echo "Configure failed" && exit 1
+          fi
 
           # 带完整工具链配置
           cmake \
