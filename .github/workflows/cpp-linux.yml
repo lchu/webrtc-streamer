@@ -37,19 +37,35 @@ jobs:
 
     - name: build
       run: |
-          # 保留配置日志
-          # 步骤1: 设置环境变量优先
           export PATH=$(pwd)/webrtc/src/third_party/llvm-build/Release+Asserts/bin:$PATH
-
-          # 步骤2: 添加必要依赖（ARM交叉编译）
           sudo apt-get install -y binutils-arm-linux-gnueabihf gcc-arm-linux-gnueabihf
 
-          # 步骤3: 强制指定交叉编译器
-          (cd webrtc/src/third_party/ffmpeg && CC=clang CXX=clang++ AR=llvm-ar ./configure --disable-x86asm --disable-asm --arch=arm --enable-cross-compile --target-os=linux --sysroot=$(pwd)/webrtc/src/build/linux/debian_bullseye_arm-sysroot ${CONFIGURE_ARGS} ) | tee ffbuild/config.log
+          # 新增：创建配置日志目录
+          mkdir -p webrtc/src/third_party/ffmpeg/ffbuild
 
-          # 步骤4: 带完整工具链配置的CMake
-          cmake -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_AR=llvm-ar -DCMAKE_SYSROOT=$(pwd)/webrtc/src/build/linux/debian_bullseye_arm-sysroot -DCMAKE_BUILD_TYPE=${{ matrix.buildtype }} .
+          (cd webrtc/src/third_party/ffmpeg && \
+           CC=clang CXX=clang++ AR=llvm-ar \
+           ./configure \
+           --disable-x86asm \
+           --disable-asm \
+           --arch=arm \
+           --enable-cross-compile \
+           --target-os=linux \
+           --sysroot=$(pwd)/webrtc/src/build/linux/debian_bullseye_arm-sysroot \
+           --extra-cflags="-std=c11 --target=arm-linux-gnueabihf" \  # 新增C11标准
+           --extra-ldflags="--target=arm-linux-gnueabihf" \
+           --enable-pic \
+           ${CONFIGURE_ARGS} ) 2>&1 | tee ffbuild/config.log  # 确保日志输出
+
+          # 带完整工具链配置
+          cmake \
+          -DCMAKE_C_COMPILER=clang \
+          -DCMAKE_CXX_COMPILER=clang++ \
+          -DCMAKE_AR=llvm-ar \
+          -DCMAKE_SYSROOT=$(pwd)/webrtc/src/build/linux/debian_bullseye_arm-sysroot \
+          -DCMAKE_BUILD_TYPE=${{ matrix.buildtype }} .
           make
+
 
     - name: cpack 
       run: | 
