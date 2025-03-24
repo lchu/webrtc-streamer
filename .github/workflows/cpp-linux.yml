@@ -27,13 +27,23 @@ jobs:
       run: |
           git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git
           echo "$(pwd)/depot_tools" >> $GITHUB_PATH
+          
+          # 安装ARM交叉编译基础库
+          sudo apt-get install -y libc6-dev-armhf-cross libgcc-10-dev-armhf-cross libstdc++-10-dev-armhf-cross
 
+          # 创建sysroot目录结构
+          sudo mkdir -p ${PWD}/webrtc/src/build/linux/debian_bullseye_arm-sysroot/usr/lib/arm-linux-gnueabihf
+          
+          # 链接关键库文件
+          sudo ln -s /usr/arm-linux-gnueabihf/lib ${PWD}/webrtc/src/build/linux/debian_bullseye_arm-sysroot/usr/lib/arm-linux-gnueabihf
+          sudo ln -s /usr/lib/gcc-cross/arm-linux-gnueabihf/10 ${PWD}/webrtc/src/build/linux/debian_bullseye_arm-sysroot/usr/lib/gcc
+      
     - name: fetch webrtc
       run: |
           mkdir webrtc
           pushd webrtc
           fetch --nohooks webrtc
-          popd
+          popd          
 
     - name: build
       run: |
@@ -41,6 +51,9 @@ jobs:
 
           export PATH=$(pwd)/webrtc/src/third_party/llvm-build/Release+Asserts/bin:$PATH
           sudo apt-get install -y binutils-arm-linux-gnueabihf gcc-arm-linux-gnueabihf
+
+           # 更新工具链参数
+          export CLANG_FLAGS="--target=arm-linux-gnueabihf --sysroot=${PWD}/webrtc/src/build/linux/debian_bullseye_arm-sysroot -B${PWD}/webrtc/src/build/linux/debian_bullseye_arm-sysroot/usr/lib/gcc"
 
           # 新增：创建配置日志目录
           mkdir -p webrtc/src/third_party/ffmpeg/ffbuild
@@ -51,8 +64,11 @@ jobs:
           cmake \
           -DCMAKE_C_COMPILER=clang \
           -DCMAKE_CXX_COMPILER=clang++ \
-          -DCMAKE_AR=llvm-ar \
-          -DCMAKE_SYSROOT=$(pwd)/webrtc/src/build/linux/debian_bullseye_arm-sysroot \
+          -DCMAKE_C_FLAGS="${CLANG_FLAGS}" \
+          -DCMAKE_CXX_FLAGS="${CLANG_FLAGS}" \
+          -DCMAKE_SYSROOT=${PWD}/webrtc/src/build/linux/debian_bullseye_arm-sysroot \
+          -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=lld -Wl,--sysroot=${PWD}/webrtc/src/build/linux/debian_bullseye_arm-sysroot" \
+          -DCMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY \  # 跳过链接测试
           -DCMAKE_BUILD_TYPE=${{ matrix.buildtype }} .
           make
 

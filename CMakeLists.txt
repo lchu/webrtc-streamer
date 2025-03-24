@@ -1,4 +1,15 @@
 cmake_minimum_required (VERSION 3.5)
+
+set(CMAKE_SYSTEM_NAME Linux)
+set(CMAKE_SYSTEM_PROCESSOR arm)
+
+# 指定交叉编译工具链
+set(CMAKE_C_COMPILER_TARGET arm-linux-gnueabihf)
+set(CMAKE_CXX_COMPILER_TARGET arm-linux-gnueabihf)
+
+# 禁用编译器测试中的链接步骤
+set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
+
 project (webrtc-streamer)
 
 set (WEBRTCROOT "${CMAKE_CURRENT_SOURCE_DIR}/../webrtc" CACHE STRING "WEBRTC root directory")
@@ -15,6 +26,10 @@ set (CMAKE_POSITION_INDEPENDENT_CODE ON)
 set (CMAKE_CXX_STANDARD 20)
 set (CMAKE_CXX_EXTENSIONS OFF)
 
+link_directories(
+    ${WEBRTCROOT}/src/build/linux/debian_bullseye_arm-sysroot/usr/lib/arm-linux-gnueabihf
+    ${WEBRTCROOT}/src/build/linux/debian_bullseye_arm-sysroot/lib/arm-linux-gnueabihf
+)
 
 # set CMAKE_FIND_ROOT_PATH to search package in WebRTC sysroot
 if(CMAKE_SYSTEM_PROCESSOR MATCHES "armv.*")
@@ -139,7 +154,7 @@ if (NOT EXISTS ${WEBRTCOBJS}/${CMAKE_STATIC_LIBRARY_PREFIX}webrtc${CMAKE_STATIC_
       OUTPUT_VARIABLE CONFIG_OUTPUT
       ERROR_VARIABLE CONFIG_ERROR
   )
-  
+
   # 编译安装FFmpeg
   EXECUTE_PROCESS(
       WORKING_DIRECTORY ${WEBRTCROOT}/src/third_party/ffmpeg
