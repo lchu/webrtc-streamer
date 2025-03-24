@@ -111,6 +111,19 @@ if (NOT EXISTS ${WEBRTCOBJS}/${CMAKE_STATIC_LIBRARY_PREFIX}webrtc${CMAKE_STATIC_
     set (WEBRTCARGS is_debug=true\n${WEBRTCARGS})
   endif()
 
+  # 使用绝对路径替代相对路径
+  get_filename_component(WEBRTC_ABS_ROOT "${WEBRTCROOT}" ABSOLUTE)
+
+  # 修改DEPS处理逻辑
+  if(EXISTS "${WEBRTC_ABS_ROOT}/DEPS")
+      file(READ "${WEBRTC_ABS_ROOT}/DEPS" filecontent)
+      string(REPLACE "'src/resources'],$" "'src/resources'],'condition':'rtc_include_tests==true'," modified_content "${filecontent}")
+      file(WRITE "${WEBRTC_ABS_ROOT}/DEPS" "${modified_content}")
+  else()
+      message(FATAL_ERROR "WebRTC DEPS not found at ${WEBRTC_ABS_ROOT}/DEPS")
+  endif()
+
+
   # enable H264 support
   if (WEBRTCCHROMEBRANDED STREQUAL "ON")
     set (WEBRTCARGS is_chrome_branded=true\n${WEBRTCARGS})
@@ -138,18 +151,24 @@ if (NOT EXISTS ${WEBRTCOBJS}/${CMAKE_STATIC_LIBRARY_PREFIX}webrtc${CMAKE_STATIC_
   MESSAGE("CONFIGURE_ARGS = ${CONFIGURE_ARGS}")
   EXECUTE_PROCESS(WORKING_DIRECTORY ${WEBRTCROOT}/src/third_party/ffmpeg COMMAND ./configure ${CONFIGURE_ARGS})
   
-  file(COPY ${WEBRTCROOT}/src/third_party/ffmpeg/config.h DESTINATION ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/config/Chrome/linux/arm/)
-  file(COPY ${WEBRTCROOT}/src/third_party/ffmpeg/config_components.h DESTINATION ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/config/Chrome/linux/arm/)
-  file(COPY ${WEBRTCROOT}/src/third_party/ffmpeg/libavutil/avconfig.h DESTINATION ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/config/Chrome/linux/arm/libavutil/)
-  file(COPY ${WEBRTCROOT}/src/third_party/ffmpeg/libavfilter/filter_list.c DESTINATION ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/config/Chrome/linux/arm/libavutil/)
-  file(COPY ${WEBRTCROOT}/src/third_party/ffmpeg/libavcodec/codec_list.c DESTINATION ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/config/Chrome/linux/arm/libavcodec/)
-  file(COPY ${WEBRTCROOT}/src/third_party/ffmpeg/libavcodec/parser_list.c DESTINATION ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/config/Chrome/linux/arm/libavcodec/)
-  file(COPY ${WEBRTCROOT}/src/third_party/ffmpeg/libavcodec/bsf_list.c DESTINATION ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/config/Chrome/linux/arm/libavcodec/)
-  file(COPY ${WEBRTCROOT}/src/third_party/ffmpeg/libavformat/demuxer_list.c DESTINATION ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/config/Chrome/linux/arm/libavformat/)
-  file(COPY ${WEBRTCROOT}/src/third_party/ffmpeg/libavformat/muxer_list.c DESTINATION ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/config/Chrome/linux/arm/libavformat/)
-  file(COPY ${WEBRTCROOT}/src/third_party/ffmpeg/libavformat/protocol_list.c DESTINATION ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/config/Chrome/linux/arm/libavformat/)
-  
-  file(MAKE_DIRECTORY ${WEBRTCROOT}/src/third_party/ffmpeg/ffbuild)
+  set(FFMPEG_BUILD_DIR "${WEBRTCROOT}/src/third_party/ffmpeg")
+  set(FFMPEG_INSTALL_DIR "${WEBRTCROOT}/ffmpeg_install")
+
+  add_custom_command(
+      OUTPUT ${CMAKE_BINARY_DIR}/ffmpeg_headers.stamp
+      COMMAND cmake -E make_directory "${FFMPEG_BUILD_DIR}/chromium/config/Chrome/linux/arm"
+      COMMAND cmake -E copy
+          "${FFMPEG_INSTALL_DIR}/include/config.h"
+          "${FFMPEG_BUILD_DIR}/chromium/config/Chrome/linux/arm/"
+      COMMAND cmake -E copy
+          "${FFMPEG_INSTALL_DIR}/include/libavutil/avconfig.h" 
+          "${FFMPEG_BUILD_DIR}/chromium/config/Chrome/linux/arm/libavutil/"
+      COMMAND cmake -E touch ${CMAKE_BINARY_DIR}/ffmpeg_headers.stamp
+      DEPENDS "${FFMPEG_INSTALL_DIR}/include/config.h"
+  )
+
+  add_custom_target(ffmpeg_headers DEPENDS ${CMAKE_BINARY_DIR}/ffmpeg_headers.stamp)
+  add_dependencies(${PROJECT_NAME} ffmpeg_headers)
 
   # 确保参数正确传递
   EXECUTE_PROCESS(

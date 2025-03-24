@@ -27,7 +27,20 @@ jobs:
       run: |
           git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git
           echo "$(pwd)/depot_tools" >> $GITHUB_PATH
-      
+    
+    - name: Prepare FFmpeg Headers
+      run: |
+        # 创建目标目录结构
+        mkdir -p "${WEBRTC_ROOT}/src/third_party/ffmpeg/chromium/config/Chrome/linux/arm"
+        
+        # 复制生成的配置文件
+        cp -v "${WEBRTC_ROOT}/ffmpeg_install/include/libavutil/avconfig.h" \
+          "${WEBRTC_ROOT}/src/third_party/ffmpeg/chromium/config/Chrome/linux/arm/libavutil/"
+        
+        # 验证关键文件存在
+        [ -f "${WEBRTC_ROOT}/src/third_party/ffmpeg/config.h" ] || exit 1
+          
+
     - name: fetch webrtc
       run: |
           mkdir webrtc
@@ -47,29 +60,38 @@ jobs:
 
     - name: Configure WebRTC
       run: |
-          export WEBRTC_ROOT="${GITHUB_WORKSPACE}/webrtc"
+          # 创建精确路径并初始化gclient
+          export WEBRTC_ROOT="${{ github.workspace }}/webrtc"
+          mkdir -p "${WEBRTC_ROOT}/src"
           
           # 初始化gclient配置
-          mkdir -p ${WEBRTC_ROOT} && cd ${WEBRTC_ROOT}
-          gclient config --name=src https://webrtc.googlesource.com/src
+          cd "${WEBRTC_ROOT}"
+          gclient config --name=src https://webrtc.googlesource.com/src --unmanaged
+          
+          # 强制同步依赖
+          gclient sync --reset --force --no-history -D
           
           # 应用DEPS补丁
-          sed -i "s/'src\/resources'],\$/'src\/resources'],'condition':'rtc_include_tests==true',/" ${WEBRTC_ROOT}/src/DEPS
-          
-          # 全量同步依赖
-          gclient sync --no-history -D -f --with_branch_heads --reset
+          sed -i "s/'src\/resources'],\$/'src\/resources'],'condition':'rtc_include_tests==true',/" "${WEBRTC_ROOT}/src/DEPS"
           
           # 安装sysroot
           python3 src/build/linux/sysroot_scripts/install-sysroot.py --arch=arm
     
     - name: Build FFmpeg
       run: |
-          cd ${WEBRTC_ROOT}/src/third_party/ffmpeg
-          ./configure --target-os=linux --arch=arm --enable-cross-compile \
-              --sysroot=${WEBRTC_ROOT}/src/build/linux/debian_bullseye_arm-sysroot \
-              --prefix=${WEBRTC_ROOT}/ffmpeg_build \
-              --enable-shared --disable-static
-          make -j$(nproc) && make install
+          cd "${WEBRTC_ROOT}/src/third_party/ffmpeg"
+        
+          # 生成配置头文件
+          ./configure \
+            --target-os=linux \
+            --arch=arm \
+            --enable-cross-compile \
+            --sysroot="${WEBRTC_ROOT}/src/build/linux/debian_bullseye_arm-sysroot" \
+            --prefix="${WEBRTC_ROOT}/ffmpeg_install" \
+            --enable-shared
+
+          # 编译并生成头文件
+          make -j$(nproc) install
           
     - name: Configure Project
       run: |
