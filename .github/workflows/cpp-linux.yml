@@ -45,26 +45,7 @@ jobs:
           # 新增：创建配置日志目录
           mkdir -p webrtc/src/third_party/ffmpeg/ffbuild
 
-          (cd webrtc/src/third_party/ffmpeg && \
-           CC=clang CXX=clang++ AR=llvm-ar \
-           ./configure \
-           --disable-x86asm \
-           --disable-asm \
-           --arch=arm \
-           --enable-cross-compile \
-           --target-os=linux \
-           --sysroot=$(pwd)/webrtc/src/build/linux/debian_bullseye_arm-sysroot \
-           --extra-cflags="-std=c11 --target=arm-linux-gnueabihf" \  # 新增C11标准
-           --extra-ldflags="--target=arm-linux-gnueabihf" \
-           --enable-pic \
-           ${CONFIGURE_ARGS} ) 2>&1  # 确保日志输出
-
-          # 添加配置验证
-          if [ -f webrtc/src/third_party/ffmpeg/ffbuild/config.log ]; then
-              echo "Configure succeeded"
-          else
-              echo "Configure failed" && exit 1
-          fi
+          (cd webrtc/src/third_party/ffmpeg && ./configure ${CONFIGURE_ARGS} ) 2>&1  # 确保日志输出
 
           # 带完整工具链配置
           cmake \
