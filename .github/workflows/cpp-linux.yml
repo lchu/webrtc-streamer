@@ -45,6 +45,40 @@ jobs:
           sudo ln -s /usr/arm-linux-gnueabihf/lib ${PWD}/webrtc/src/build/linux/debian_bullseye_arm-sysroot/usr/lib/arm-linux-gnueabihf
           sudo ln -s /usr/lib/gcc-cross/arm-linux-gnueabihf/10 ${PWD}/webrtc/src/build/linux/debian_bullseye_arm-sysroot/usr/lib/gcc
 
+    - name: Configure WebRTC
+      run: |
+          export WEBRTC_ROOT="${GITHUB_WORKSPACE}/webrtc"
+          
+          # 初始化gclient配置
+          mkdir -p ${WEBRTC_ROOT} && cd ${WEBRTC_ROOT}
+          gclient config --name=src https://webrtc.googlesource.com/src
+          
+          # 应用DEPS补丁
+          sed -i "s/'src\/resources'],\$/'src\/resources'],'condition':'rtc_include_tests==true',/" ${WEBRTC_ROOT}/src/DEPS
+          
+          # 全量同步依赖
+          gclient sync --no-history -D -f --with_branch_heads --reset
+          
+          # 安装sysroot
+          python3 src/build/linux/sysroot_scripts/install-sysroot.py --arch=arm
+    
+    - name: Build FFmpeg
+      run: |
+          cd ${WEBRTC_ROOT}/src/third_party/ffmpeg
+          ./configure --target-os=linux --arch=arm --enable-cross-compile \
+              --sysroot=${WEBRTC_ROOT}/src/build/linux/debian_bullseye_arm-sysroot \
+              --prefix=${WEBRTC_ROOT}/ffmpeg_build \
+              --enable-shared --disable-static
+          make -j$(nproc) && make install
+          
+    - name: Configure Project
+      run: |
+          cd ${GITHUB_WORKSPACE}
+          cmake -B build -S . \
+            -DWEBRTCROOT=${WEBRTC_ROOT}/src \
+            -DCMAKE_PREFIX_PATH=${WEBRTC_ROOT}/ffmpeg_build \
+            -DCMAKE_VERBOSE_MAKEFILE=ON
+
     - name: build
       run: |
           WORKSPACE=$(echo "${GITHUB_WORKSPACE}" | tr -d '[:space:]')
