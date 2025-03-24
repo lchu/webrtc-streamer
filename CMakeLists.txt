@@ -112,8 +112,35 @@ if (NOT EXISTS ${WEBRTCOBJS}/${CMAKE_STATIC_LIBRARY_PREFIX}webrtc${CMAKE_STATIC_
   file(COPY ${WEBRTCROOT}/src/third_party/ffmpeg/libavformat/demuxer_list.c DESTINATION ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/config/Chrome/linux/arm/libavformat/)
   file(COPY ${WEBRTCROOT}/src/third_party/ffmpeg/libavformat/muxer_list.c DESTINATION ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/config/Chrome/linux/arm/libavformat/)
   file(COPY ${WEBRTCROOT}/src/third_party/ffmpeg/libavformat/protocol_list.c DESTINATION ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/config/Chrome/linux/arm/libavformat/)
-  target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/config/Chrome/linux/arm/ ${WEBRTCROOT}/src/third_party/ffmpeg/linux/arm/)
 
+
+  # FFmpeg配置
+  EXECUTE_PROCESS(
+      WORKING_DIRECTORY ${WEBRTCROOT}/src/third_party/ffmpeg 
+      COMMAND ./configure ${CONFIGURE_ARGS}
+  )
+  # 编译安装FFmpeg
+  EXECUTE_PROCESS(
+      WORKING_DIRECTORY ${WEBRTCROOT}/src/third_party/ffmpeg
+      COMMAND make -j4
+  )
+  EXECUTE_PROCESS(
+      WORKING_DIRECTORY ${WEBRTCROOT}/src/third_party/ffmpeg
+      COMMAND make install
+  )
+
+  set (WEBRTCARGS rtc_use_ffmpeg=true\n${WEBRTCARGS})
+
+  target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
+    ${WEBRTCROOT}/src/third_party/ffmpeg
+    ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/config/Chrome/linux/arm/
+    ${WEBRTCROOT}/src/third_party/ffmpeg/build/include/
+  )
+
+  link_directories(${WEBRTCROOT}/src/third_party/ffmpeg/build/lib)
+  target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE
+      avcodec avformat avutil swscale swresample
+  )
   # endif()  
   
   #patch
