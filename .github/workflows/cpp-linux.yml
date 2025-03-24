@@ -47,12 +47,15 @@ jobs:
 
     - name: build
       run: |
+          WORKSPACE=$(echo "${GITHUB_WORKSPACE}" | tr -d '[:space:]')
+          cd "${WORKSPACE}"
+
           export CONFIGURE_ARGS="--disable-x86asm --disable-asm --arch=arm --enable-cross-compile --target-os=linux --enable-pic --cc=clang --cxx=clang++ --ld=clang"
           export PATH=$(pwd)/webrtc/src/third_party/llvm-build/Release+Asserts/bin:$PATH
           sudo apt-get install -y binutils-arm-linux-gnueabihf gcc-arm-linux-gnueabihf
 
            # 更新工具链参数
-          export CLANG_FLAGS="--target=arm-linux-gnueabihf --sysroot=${PWD}/webrtc/src/build/linux/debian_bullseye_arm-sysroot -B${PWD}/webrtc/src/build/linux/debian_bullseye_arm-sysroot/usr/lib/gcc -march=armv7-a -mfpu=neon -mfloat-abi=hard"
+          export CLANG_FLAGS="--target=arm-linux-gnueabihf --sysroot=${WORKSPACE}/webrtc/src/build/linux/debian_bullseye_arm-sysroot -B${WORKSPACE}/webrtc/src/build/linux/debian_bullseye_arm-sysroot/usr/lib/gcc -march=armv7-a -mfpu=neon -mfloat-abi=hard"
 
           # 新增：创建配置日志目录
           mkdir -p webrtc/src/third_party/ffmpeg/ffbuild
@@ -60,7 +63,7 @@ jobs:
           (cd webrtc/src/third_party/ffmpeg && ./configure ${CONFIGURE_ARGS} ) 2>&1  # 确保日志输出
 
           # 带完整工具链配置
-          cmake \
+          cmake -B "${WORKSPACE}/build" -S "${WORKSPACE}" \
           -DCMAKE_C_COMPILER=clang \
           -DCMAKE_CXX_COMPILER=clang++ \
           -DCMAKE_C_FLAGS="${CLANG_FLAGS}" \
@@ -68,8 +71,11 @@ jobs:
           -DCMAKE_SYSROOT=${PWD}/webrtc/src/build/linux/debian_bullseye_arm-sysroot \
           -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=lld -Wl,--sysroot=${PWD}/webrtc/src/build/linux/debian_bullseye_arm-sysroot" \
           -DCMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY \  # 跳过链接测试
-          -DCMAKE_BUILD_TYPE=${{ matrix.buildtype }} .
-          make
+          -DCMAKE_BUILD_TYPE=${{ matrix.buildtype }} \
+          --no-warn-unused-cli
+
+          cmake --build "${WORKSPACE}/build" --verbose
+          
 
 
     - name: cpack 
