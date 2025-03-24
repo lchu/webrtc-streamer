@@ -27,6 +27,13 @@ jobs:
       run: |
           git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git
           echo "$(pwd)/depot_tools" >> $GITHUB_PATH
+      
+    - name: fetch webrtc
+      run: |
+          mkdir webrtc
+          pushd webrtc
+          fetch --nohooks webrtc
+          popd     
           
           # 安装ARM交叉编译基础库
           sudo apt-get install -y libc6-dev-armhf-cross libgcc-10-dev-armhf-cross libstdc++-10-dev-armhf-cross
@@ -37,13 +44,6 @@ jobs:
           # 链接关键库文件
           sudo ln -s /usr/arm-linux-gnueabihf/lib ${PWD}/webrtc/src/build/linux/debian_bullseye_arm-sysroot/usr/lib/arm-linux-gnueabihf
           sudo ln -s /usr/lib/gcc-cross/arm-linux-gnueabihf/10 ${PWD}/webrtc/src/build/linux/debian_bullseye_arm-sysroot/usr/lib/gcc
-      
-    - name: fetch webrtc
-      run: |
-          mkdir webrtc
-          pushd webrtc
-          fetch --nohooks webrtc
-          popd          
 
     - name: build
       run: |
