@@ -31,7 +31,7 @@ jobs:
     - name: Prepare FFmpeg Headers
       run: |
         # 创建目标目录结构
-        mkdir -p "${WEBRTC_ROOT}/src/third_party/ffmpeg/chromium/config/Chrome/linux/arm"
+        sudo mkdir -p "${WEBRTC_ROOT}/src/third_party/ffmpeg/chromium/config/Chrome/linux/arm"
         
         # 复制生成的配置文件
         cp -v "${WEBRTC_ROOT}/ffmpeg_install/include/libavutil/avconfig.h" \
@@ -43,7 +43,7 @@ jobs:
 
     - name: fetch webrtc
       run: |
-          mkdir webrtc
+          sudo mkdir webrtc
           pushd webrtc
           fetch --nohooks webrtc
           popd     
@@ -114,7 +114,7 @@ jobs:
           export CLANG_FLAGS="--target=arm-linux-gnueabihf --sysroot=${WORKSPACE}/webrtc/src/build/linux/debian_bullseye_arm-sysroot -B${WORKSPACE}/webrtc/src/build/linux/debian_bullseye_arm-sysroot/usr/lib/gcc -march=armv7-a -mfpu=neon -mfloat-abi=hard"
 
           # 新增：创建配置日志目录
-          mkdir -p webrtc/src/third_party/ffmpeg/ffbuild
+          sudo mkdir -p webrtc/src/third_party/ffmpeg/ffbuild
 
           (cd webrtc/src/third_party/ffmpeg && ./configure ${CONFIGURE_ARGS} ) 2>&1  # 确保日志输出
 
