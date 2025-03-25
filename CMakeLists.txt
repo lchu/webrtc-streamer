@@ -256,7 +256,7 @@ target_link_libraries(${CMAKE_PROJECT_NAME} avcodec avformat avutil swscale avfi
 
 # X11
 find_package(PkgConfig REQUIRED)
-pkg_check_modules(X11 REQUIRED libx11 libxcomposite libxdamage libxfixes libxrandr libxtst)
+pkg_check_modules(X11 REQUIRED x11 xcomposite xdamage xfixes xrandr xtst)
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE ${X11_INCLUDE_DIRS})
 target_link_libraries(${CMAKE_PROJECT_NAME} x11 xcomposite xdamage xfixes xrandr xtst)
 
