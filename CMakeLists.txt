@@ -252,7 +252,7 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE inc)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(FFMPEG REQUIRED libavcodec libavformat libavutil libswscale libavfilter)
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE ${FFMPEG_INCLUDE_DIRS})  
-target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE avcodec avformat avutil swscale avfilter)
+target_link_libraries(${CMAKE_PROJECT_NAME} avcodec avformat avutil swscale avfilter)
 
 # webrtc 
 set (WEBRTCINCLUDE ${WEBRTCROOT}/src ${WEBRTCROOT}/src/third_party/abseil-cpp ${WEBRTCROOT}/src/third_party/jsoncpp/source/include  ${WEBRTCROOT}/src/third_party/jsoncpp/generated ${WEBRTCROOT}/src/third_party/libyuv/include)
