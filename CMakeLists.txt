@@ -152,7 +152,7 @@ if (NOT EXISTS ${WEBRTCOBJS}/${CMAKE_STATIC_LIBRARY_PREFIX}webrtc${CMAKE_STATIC_
   EXECUTE_PROCESS(WORKING_DIRECTORY ${WEBRTCROOT}/src/third_party/ffmpeg COMMAND ./configure ${CONFIGURE_ARGS})
   
   set(FFMPEG_BUILD_DIR "${WEBRTCROOT}/src/third_party/ffmpeg")
-  set(FFMPEG_INSTALL_DIR "${WEBRTCROOT}/ffmpeg_install")
+  set(FFMPEG_INSTALL_DIR "${WEBRTCROOT}")
 
   add_custom_command(
       OUTPUT ${CMAKE_BINARY_DIR}/ffmpeg_headers.stamp
