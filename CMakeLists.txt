@@ -256,9 +256,9 @@ target_link_libraries(${CMAKE_PROJECT_NAME} avcodec avformat avutil swscale avfi
 
 # X11
 find_package(PkgConfig REQUIRED)
-pkg_check_modules(X11 REQUIRED X11 Xcomposite Xdamage Xfixes Xrandr Xtst)
+pkg_check_modules(X11 REQUIRED libx11 libxcomposite libxdamage libxfixes libxrandr libxtst)
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE ${X11_INCLUDE_DIRS})
-target_link_libraries(${CMAKE_PROJECT_NAME} ${X11_LIBRARIES} ${X11_Xcomposite_LIB} ${X11_Xdamage_LIB} ${X11_Xfixes_LIB} ${X11_Xrandr_LIB} ${X11_Xtst_LIB})
+target_link_libraries(${CMAKE_PROJECT_NAME} x11 xcomposite xdamage xfixes xrandr xtst)
 
 # webrtc 
 set (WEBRTCINCLUDE ${WEBRTCROOT}/src ${WEBRTCROOT}/src/third_party/abseil-cpp ${WEBRTCROOT}/src/third_party/jsoncpp/source/include  ${WEBRTCROOT}/src/third_party/jsoncpp/generated ${WEBRTCROOT}/src/third_party/libyuv/include)
