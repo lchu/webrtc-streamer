@@ -62,7 +62,7 @@ jobs:
       run: |
           # 创建精确路径并初始化gclient
           export WEBRTC_ROOT="${{ github.workspace }}/webrtc"
-          mkdir -p "${WEBRTC_ROOT}/src"
+          sudo mkdir -p "${WEBRTC_ROOT}/src"
           
           # 初始化gclient配置
           cd "${WEBRTC_ROOT}"
