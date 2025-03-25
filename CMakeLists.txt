@@ -155,12 +155,12 @@ if (NOT EXISTS ${WEBRTCOBJS}/${CMAKE_STATIC_LIBRARY_PREFIX}webrtc${CMAKE_STATIC_
   # file(COPY ${WEBRTCROOT}/src/third_party/ffmpeg/libavutil/avconfig.h DESTINATION ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/config/Chrome/libavutil/)
 
   find_package(PkgConfig REQUIRED)
-  pkg_check_modules(FFMPEG REQUIRED libavcodec libavformat libswscale)
+  pkg_check_modules(FFMPEG REQUIRED libavcodec libavformat libavutil libswscale libavfilter)
 
   target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE ${FFMPEG_INCLUDE_DIRS})
 
   # link_directories(${WEBRTCROOT}/src/third_party/ffmpeg/build/lib)
-  target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE avcodec avformat avutil swscale swresample)
+  target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE avcodec avformat avutil swscale avfilter)
   # endif()  
   
   #patch
