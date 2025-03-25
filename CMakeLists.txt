@@ -153,15 +153,13 @@ if (NOT EXISTS ${WEBRTCOBJS}/${CMAKE_STATIC_LIBRARY_PREFIX}webrtc${CMAKE_STATIC_
   # file(COPY ${WEBRTCROOT}/src/third_party/ffmpeg/libavformat/protocol_list.c DESTINATION ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/config/Chrome/libavformat/)
   # file(COPY ${WEBRTCROOT}/src/third_party/ffmpeg/libswscale/swscale.c DESTINATION ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/config/Chrome/libswscale/)
   # file(COPY ${WEBRTCROOT}/src/third_party/ffmpeg/libavutil/avconfig.h DESTINATION ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/config/Chrome/libavutil/)
-
-  find_package(PkgConfig REQUIRED)
-  pkg_check_modules(FFMPEG REQUIRED libavcodec libavformat libavutil libswscale libavfilter)
-
-  target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE ${FFMPEG_INCLUDE_DIRS})
-
-  # link_directories(${WEBRTCROOT}/src/third_party/ffmpeg/build/lib)
-  target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE avcodec avformat avutil swscale avfilter)
   # endif()  
+
+  # find_package(PkgConfig REQUIRED)
+  # pkg_check_modules(FFMPEG REQUIRED libavcodec libavformat libavutil libswscale libavfilter)
+  # target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE ${FFMPEG_INCLUDE_DIRS})  
+  # target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE avcodec avformat avutil swscale avfilter)
+
   
   #patch
   file(READ ${WEBRTCROOT}/src/media/base/media_channel.h filecontent)
@@ -249,6 +247,12 @@ SET (WEBRTCEXTRAOBJS ${WEBRTJSONCPPCOBJS} ${WEBRTP2POBJ} ${WEBRTCCOMOBJ})
 FILE(GLOB SOURCE src/*.cpp)
 add_executable (${CMAKE_PROJECT_NAME} ${SOURCE} ${WEBRTCEXTRAOBJS})
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE inc) 
+
+# ffmpeg
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(FFMPEG REQUIRED libavcodec libavformat libavutil libswscale libavfilter)
+target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE ${FFMPEG_INCLUDE_DIRS})  
+target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE avcodec avformat avutil swscale avfilter)
 
 # webrtc 
 set (WEBRTCINCLUDE ${WEBRTCROOT}/src ${WEBRTCROOT}/src/third_party/abseil-cpp ${WEBRTCROOT}/src/third_party/jsoncpp/source/include  ${WEBRTCROOT}/src/third_party/jsoncpp/generated ${WEBRTCROOT}/src/third_party/libyuv/include)
