@@ -191,9 +191,22 @@ if (NOT EXISTS ${WEBRTCOBJS}/${CMAKE_STATIC_LIBRARY_PREFIX}webrtc${CMAKE_STATIC_
 
   set (WEBRTCARGS rtc_use_ffmpeg=true\n${WEBRTCARGS})
 
+  file(COPY ${WEBRTCROOT}/config.h DESTINATION ${WEBRTCROOT}/)
+  file(COPY ${WEBRTCROOT}/config_components.h DESTINATION ${WEBRTCROOT}/)
+  file(COPY ${WEBRTCROOT}/src/third_party/ffmpeg/libavutil/avconfig.h DESTINATION ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/config/Chrome/libavutil/)
+  file(COPY ${WEBRTCROOT}/src/third_party/ffmpeg/libavfilter/filter_list.c DESTINATION ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/config/Chrome/libavutil/)
+  file(COPY ${WEBRTCROOT}/src/third_party/ffmpeg/libavcodec/codec_list.c DESTINATION ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/config/Chrome/libavcodec/)
+  file(COPY ${WEBRTCROOT}/src/third_party/ffmpeg/libavcodec/parser_list.c DESTINATION ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/config/Chrome/libavcodec/)
+  file(COPY ${WEBRTCROOT}/src/third_party/ffmpeg/libavcodec/bsf_list.c DESTINATION ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/config/Chrome/libavcodec/)
+  file(COPY ${WEBRTCROOT}/src/third_party/ffmpeg/libavformat/demuxer_list.c DESTINATION ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/config/Chrome/libavformat/)
+  file(COPY ${WEBRTCROOT}/src/third_party/ffmpeg/libavformat/muxer_list.c DESTINATION ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/config/Chrome/libavformat/)
+  file(COPY ${WEBRTCROOT}/src/third_party/ffmpeg/libavformat/protocol_list.c DESTINATION ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/config/Chrome/libavformat/)
+  file(COPY ${WEBRTCROOT}/src/third_party/ffmpeg/libswscale/swscale.c DESTINATION ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/config/Chrome/libswscale/)
+  file(COPY ${WEBRTCROOT}/src/third_party/ffmpeg/libavutil/avconfig.h DESTINATION ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/config/Chrome/libavutil/)
+
   target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
     ${WEBRTCROOT}/src/third_party/ffmpeg
-    ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/config/Chrome/linux/arm/
+    ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/config/Chrome/
     ${WEBRTCROOT}/src/third_party/ffmpeg/build/include/
   )
 
