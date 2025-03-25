@@ -60,7 +60,7 @@ find_package(Git)
 
 # webrtc build
 set (WEBRTCOBJS ${WEBRTCROOT}/src/out/${CMAKE_BUILD_TYPE}/obj)
-
+ 
 if (NOT EXISTS ${WEBRTCOBJS}/${CMAKE_STATIC_LIBRARY_PREFIX}webrtc${CMAKE_STATIC_LIBRARY_SUFFIX})
   if(GIT_FOUND)
     EXECUTE_PROCESS(WORKING_DIRECTORY ${WEBRTCROOT}/src COMMAND ${GIT_EXECUTABLE} status)
@@ -111,19 +111,6 @@ if (NOT EXISTS ${WEBRTCOBJS}/${CMAKE_STATIC_LIBRARY_PREFIX}webrtc${CMAKE_STATIC_
     set (WEBRTCARGS is_debug=true\n${WEBRTCARGS})
   endif()
 
-  # 使用绝对路径替代相对路径
-  get_filename_component(WEBRTC_ABS_ROOT "${WEBRTCROOT}" ABSOLUTE)
-
-  # 修改DEPS处理逻辑
-  if(EXISTS "${WEBRTC_ABS_ROOT}/DEPS")
-      file(READ "${WEBRTC_ABS_ROOT}/DEPS" filecontent)
-      string(REPLACE "'src/resources'],$" "'src/resources'],'condition':'rtc_include_tests==true'," modified_content "${filecontent}")
-      file(WRITE "${WEBRTC_ABS_ROOT}/DEPS" "${modified_content}")
-  else()
-      message(FATAL_ERROR "WebRTC DEPS not found at ${WEBRTC_ABS_ROOT}/DEPS")
-  endif()
-
-
   # enable H264 support
   if (WEBRTCCHROMEBRANDED STREQUAL "ON")
     set (WEBRTCARGS is_chrome_branded=true\n${WEBRTCARGS})
@@ -133,87 +120,47 @@ if (NOT EXISTS ${WEBRTCOBJS}/${CMAKE_STATIC_LIBRARY_PREFIX}webrtc${CMAKE_STATIC_
   # if (CMAKE_SYSTEM_PROCESSOR MATCHES "armv6.*")
   #set (CONFIGURE_ARGS --disable-x86asm --disable-asm --disable-everything --disable-all --disable-doc --disable-htmlpages --disable-manpages --disable-podpages --disable-txtpages --disable-static --enable-swscale --enable-avcodec --enable-avformat --enable-avutil --enable-static --enable-libopus --disable-debug --disable-bzlib --disable-iconv --disable-network --disable-schannel --disable-sdl2 --disable-symver --disable-xlib --disable-zlib --disable-securetransport --disable-faan --disable-alsa --disable-autodetect --disable-error-resilience --enable-decoder=vorbis,libopus,flac --enable-decoder=pcm_u8,pcm_s16le,pcm_s24le,pcm_s32le,pcm_f32le,mp3 --enable-decoder=pcm_s16be,pcm_s24be,pcm_mulaw,pcm_alaw --enable-demuxer=ogg,matroska,wav,flac,mp3,mov --enable-parser=opus,vorbis,flac,mpegaudio,vp9 --extra-cflags=-I${WEBRTCROOT}/src/third_party/opus/src/include --disable-linux-perf --x86asmexe=nasm --optflags="-O2" --arch=arm --enable-armv6 --disable-armv6t2 --enable-vfp --disable-thumb --extra-cflags=-march=armv6 --enable-cross-compile --target-os=linux --extra-cflags=--target=arm-linux-gnueabihf --extra-ldflags=--target=arm-linux-gnueabihf --sysroot=${WEBRTCROOT}/src/build/linux/debian_bullseye_armhf-sysroot --extra-cflags=-mtune=cortex-a8 --extra-cflags=-mfloat-abi=hard --extra-cflags=-O2 --disable-neon --extra-cflags=-mfpu=vfpv3-d16 --enable-pic --cc=clang --cxx=clang++ --ld=clang --extra-ldflags=-fuse-ld=lld --enable-decoder=aac,h264 --enable-demuxer=aac --enable-parser=aac,h264)
   # 修改CONFIGURE_ARGS定义方式
-  set(CONFIGURE_ARGS
-    --disable-x86asm
-    --disable-asm
-    --arch=arm
-    --enable-cross-compile
-    --target-os=linux
-    --sysroot=${WEBRTCROOT}/src/build/linux/debian_bullseye_arm-sysroot
-    --extra-cflags=-std=c11
-    --extra-cflags=--target=arm-linux-gnueabihf
-    --extra-ldflags=--target=arm-linux-gnueabihf
-    --enable-pic
-    --cc=clang
-    --cxx=clang++
-    --ld=clang
-  )
-  MESSAGE("CONFIGURE_ARGS = ${CONFIGURE_ARGS}")
-  EXECUTE_PROCESS(WORKING_DIRECTORY ${WEBRTCROOT}/src/third_party/ffmpeg COMMAND ./configure ${CONFIGURE_ARGS})
-  
-  set(FFMPEG_BUILD_DIR "${WEBRTCROOT}/src/third_party/ffmpeg")
-  set(FFMPEG_INSTALL_DIR "${WEBRTCROOT}")
+  # set(CONFIGURE_ARGS
+  #   --disable-x86asm
+  #   --disable-asm
+  #   --arch=arm
+  #   --enable-cross-compile
+  #   --target-os=linux
+  #   --sysroot=${WEBRTCROOT}/src/build/linux/debian_bullseye_arm-sysroot
+  #   --extra-cflags=-std=c11
+  #   --extra-cflags=--target=arm-linux-gnueabihf
+  #   --extra-ldflags=--target=arm-linux-gnueabihf
+  #   --enable-pic
+  #   --cc=clang
+  #   --cxx=clang++
+  #   --ld=clang
+  # )
+  # MESSAGE("CONFIGURE_ARGS = ${CONFIGURE_ARGS}")
+  # EXECUTE_PROCESS(WORKING_DIRECTORY ${WEBRTCROOT}/src/third_party/ffmpeg COMMAND ./configure ${CONFIGURE_ARGS})
 
-  add_custom_command(
-      OUTPUT ${CMAKE_BINARY_DIR}/ffmpeg_headers.stamp
-      COMMAND cmake -E make_directory "${FFMPEG_BUILD_DIR}/chromium/config/Chrome/linux/arm"
-      COMMAND cmake -E copy
-          "${FFMPEG_INSTALL_DIR}/include/config.h"
-          "${FFMPEG_BUILD_DIR}/chromium/config/Chrome/linux/arm/"
-      COMMAND cmake -E copy
-          "${FFMPEG_INSTALL_DIR}/include/libavutil/avconfig.h" 
-          "${FFMPEG_BUILD_DIR}/chromium/config/Chrome/linux/arm/libavutil/"
-      COMMAND cmake -E touch ${CMAKE_BINARY_DIR}/ffmpeg_headers.stamp
-      DEPENDS "${FFMPEG_INSTALL_DIR}/include/config.h"
-  )
 
-  add_custom_target(ffmpeg_headers DEPENDS ${CMAKE_BINARY_DIR}/ffmpeg_headers.stamp)
-  add_dependencies(${PROJECT_NAME} ffmpeg_headers)
+  # set (WEBRTCARGS rtc_use_ffmpeg=true\n${WEBRTCARGS})
 
-  # 确保参数正确传递
-  EXECUTE_PROCESS(
-      WORKING_DIRECTORY ${WEBRTCROOT}/src/third_party/ffmpeg
-      COMMAND ./configure ${CONFIGURE_ARGS}
-      RESULT_VARIABLE CONFIG_RESULT
-      OUTPUT_VARIABLE CONFIG_OUTPUT
-      ERROR_VARIABLE CONFIG_ERROR
-  )
+  # file(COPY ${WEBRTCROOT}/config.h DESTINATION ${WEBRTCROOT}/)
+  # file(COPY ${WEBRTCROOT}/config_components.h DESTINATION ${WEBRTCROOT}/)
+  # file(COPY ${WEBRTCROOT}/src/third_party/ffmpeg/libavutil/avconfig.h DESTINATION ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/config/Chrome/libavutil/)
+  # file(COPY ${WEBRTCROOT}/src/third_party/ffmpeg/libavfilter/filter_list.c DESTINATION ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/config/Chrome/libavutil/)
+  # file(COPY ${WEBRTCROOT}/src/third_party/ffmpeg/libavcodec/codec_list.c DESTINATION ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/config/Chrome/libavcodec/)
+  # file(COPY ${WEBRTCROOT}/src/third_party/ffmpeg/libavcodec/parser_list.c DESTINATION ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/config/Chrome/libavcodec/)
+  # file(COPY ${WEBRTCROOT}/src/third_party/ffmpeg/libavcodec/bsf_list.c DESTINATION ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/config/Chrome/libavcodec/)
+  # file(COPY ${WEBRTCROOT}/src/third_party/ffmpeg/libavformat/demuxer_list.c DESTINATION ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/config/Chrome/libavformat/)
+  # file(COPY ${WEBRTCROOT}/src/third_party/ffmpeg/libavformat/muxer_list.c DESTINATION ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/config/Chrome/libavformat/)
+  # file(COPY ${WEBRTCROOT}/src/third_party/ffmpeg/libavformat/protocol_list.c DESTINATION ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/config/Chrome/libavformat/)
+  # file(COPY ${WEBRTCROOT}/src/third_party/ffmpeg/libswscale/swscale.c DESTINATION ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/config/Chrome/libswscale/)
+  # file(COPY ${WEBRTCROOT}/src/third_party/ffmpeg/libavutil/avconfig.h DESTINATION ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/config/Chrome/libavutil/)
 
-  # 编译安装FFmpeg
-  EXECUTE_PROCESS(
-      WORKING_DIRECTORY ${WEBRTCROOT}/src/third_party/ffmpeg
-      COMMAND make -j4
-  )
-  EXECUTE_PROCESS(
-      WORKING_DIRECTORY ${WEBRTCROOT}/src/third_party/ffmpeg
-      COMMAND make install
-  )
+  find_package(PkgConfig REQUIRED)
+  pkg_check_modules(FFMPEG REQUIRED libavcodec libavformat libswscale)
 
-  set (WEBRTCARGS rtc_use_ffmpeg=true\n${WEBRTCARGS})
+  target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE ${FFMPEG_INCLUDE_DIRS})
 
-  file(COPY ${WEBRTCROOT}/config.h DESTINATION ${WEBRTCROOT}/)
-  file(COPY ${WEBRTCROOT}/config_components.h DESTINATION ${WEBRTCROOT}/)
-  file(COPY ${WEBRTCROOT}/src/third_party/ffmpeg/libavutil/avconfig.h DESTINATION ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/config/Chrome/libavutil/)
-  file(COPY ${WEBRTCROOT}/src/third_party/ffmpeg/libavfilter/filter_list.c DESTINATION ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/config/Chrome/libavutil/)
-  file(COPY ${WEBRTCROOT}/src/third_party/ffmpeg/libavcodec/codec_list.c DESTINATION ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/config/Chrome/libavcodec/)
-  file(COPY ${WEBRTCROOT}/src/third_party/ffmpeg/libavcodec/parser_list.c DESTINATION ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/config/Chrome/libavcodec/)
-  file(COPY ${WEBRTCROOT}/src/third_party/ffmpeg/libavcodec/bsf_list.c DESTINATION ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/config/Chrome/libavcodec/)
-  file(COPY ${WEBRTCROOT}/src/third_party/ffmpeg/libavformat/demuxer_list.c DESTINATION ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/config/Chrome/libavformat/)
-  file(COPY ${WEBRTCROOT}/src/third_party/ffmpeg/libavformat/muxer_list.c DESTINATION ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/config/Chrome/libavformat/)
-  file(COPY ${WEBRTCROOT}/src/third_party/ffmpeg/libavformat/protocol_list.c DESTINATION ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/config/Chrome/libavformat/)
-  file(COPY ${WEBRTCROOT}/src/third_party/ffmpeg/libswscale/swscale.c DESTINATION ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/config/Chrome/libswscale/)
-  file(COPY ${WEBRTCROOT}/src/third_party/ffmpeg/libavutil/avconfig.h DESTINATION ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/config/Chrome/libavutil/)
-
-  target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
-    ${WEBRTCROOT}/src/third_party/ffmpeg
-    ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/config/Chrome/
-    ${WEBRTCROOT}/src/third_party/ffmpeg/build/include/
-  )
-
-  link_directories(${WEBRTCROOT}/src/third_party/ffmpeg/build/lib)
-  target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE
-      avcodec avformat avutil swscale swresample
-  )
+  # link_directories(${WEBRTCROOT}/src/third_party/ffmpeg/build/lib)
+  target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE avcodec avformat avutil swscale swresample)
   # endif()  
   
   #patch

@@ -23,116 +23,26 @@ jobs:
     - name: pkg
       run: sudo apt-get update && sudo apt-get install -y --no-install-recommends g++ autoconf automake libtool xz-utils libasound2-dev libpulse-dev libgtk-3-dev cmake p7zip-full
 
+    - name: ffmpeg
+      run: sudo apt-get update && sudo apt-get install libavcodec-dev libavformat-dev libavfilter-dev libavdevice-dev libavutil-dev libswscale-dev libswresample-dev
+
     - name: depot_tools
       run: |
           git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git
           echo "$(pwd)/depot_tools" >> $GITHUB_PATH
-    
-    - name: Prepare FFmpeg Headers
-      run: |
-        # 创建目标目录结构
-        sudo mkdir -p "${WEBRTC_ROOT}/src/third_party/ffmpeg/chromium/config/Chrome/linux/arm"
-        
-        # 复制生成的配置文件
-        cp -v "${WEBRTC_ROOT}/ffmpeg_install/include/libavutil/avconfig.h" \
-          "${WEBRTC_ROOT}/src/third_party/ffmpeg/chromium/config/Chrome/linux/arm/libavutil/"
-        
-        # 验证关键文件存在
-        [ -f "${WEBRTC_ROOT}/src/third_party/ffmpeg/config.h" ] || exit 1
-          
 
     - name: fetch webrtc
       run: |
-          sudo mkdir webrtc
+          mkdir webrtc
           pushd webrtc
           fetch --nohooks webrtc
-          popd     
-          
-          # 安装ARM交叉编译基础库
-          sudo apt-get install -y libc6-dev-armhf-cross libgcc-10-dev-armhf-cross libstdc++-10-dev-armhf-cross
-
-          # 创建sysroot目录结构
-          sudo mkdir -p ${PWD}/webrtc/src/build/linux/debian_bullseye_arm-sysroot/usr/lib/arm-linux-gnueabihf
-          
-          # 链接关键库文件
-          sudo ln -s /usr/arm-linux-gnueabihf/lib ${PWD}/webrtc/src/build/linux/debian_bullseye_arm-sysroot/usr/lib/arm-linux-gnueabihf
-          sudo ln -s /usr/lib/gcc-cross/arm-linux-gnueabihf/10 ${PWD}/webrtc/src/build/linux/debian_bullseye_arm-sysroot/usr/lib/gcc
-
-    - name: Configure WebRTC
-      run: |
-          # 创建精确路径并初始化gclient
-          export WEBRTC_ROOT="${{ github.workspace }}/webrtc"
-          sudo mkdir -p "${WEBRTC_ROOT}/src"
-          
-          # 初始化gclient配置
-          cd "${WEBRTC_ROOT}"
-          gclient config --name=src https://webrtc.googlesource.com/src --unmanaged
-          
-          # 强制同步依赖
-          gclient sync --reset --force --no-history -D
-          
-          # 应用DEPS补丁
-          sed -i "s/'src\/resources'],\$/'src\/resources'],'condition':'rtc_include_tests==true',/" "${WEBRTC_ROOT}/src/DEPS"
-          
-          # 安装sysroot
-          python3 src/build/linux/sysroot_scripts/install-sysroot.py --arch=arm
-    
-    - name: Build FFmpeg
-      run: |
-          cd "${WEBRTC_ROOT}/src/third_party/ffmpeg"
-        
-          # 生成配置头文件
-          ./configure \
-            --target-os=linux \
-            --arch=arm \
-            --enable-cross-compile \
-            --sysroot="${WEBRTC_ROOT}/src/build/linux/debian_bullseye_arm-sysroot" \
-            --prefix="${WEBRTC_ROOT}/ffmpeg_install" \
-            --enable-shared
-
-          # 编译并生成头文件
-          make -j$(nproc) install
-          
-    - name: Configure Project
-      run: |
-          cd ${GITHUB_WORKSPACE}
-          cmake -B build -S . \
-            -DWEBRTCROOT=${WEBRTC_ROOT}/src \
-            -DCMAKE_PREFIX_PATH=${WEBRTC_ROOT}/ffmpeg_build \
-            -DCMAKE_VERBOSE_MAKEFILE=ON
+          popd
 
     - name: build
       run: |
-          WORKSPACE=$(echo "${GITHUB_WORKSPACE}" | tr -d '[:space:]')
-          cd "${WORKSPACE}"
-
-          export CONFIGURE_ARGS="--disable-x86asm --disable-asm --arch=arm --enable-cross-compile --target-os=linux --enable-pic --cc=clang --cxx=clang++ --ld=clang"
           export PATH=$(pwd)/webrtc/src/third_party/llvm-build/Release+Asserts/bin:$PATH
-          sudo apt-get install -y binutils-arm-linux-gnueabihf gcc-arm-linux-gnueabihf
-
-           # 更新工具链参数
-          export CLANG_FLAGS="--target=arm-linux-gnueabihf --sysroot=${WORKSPACE}/webrtc/src/build/linux/debian_bullseye_arm-sysroot -B${WORKSPACE}/webrtc/src/build/linux/debian_bullseye_arm-sysroot/usr/lib/gcc -march=armv7-a -mfpu=neon -mfloat-abi=hard"
-
-          # 新增：创建配置日志目录
-          sudo mkdir -p webrtc/src/third_party/ffmpeg/ffbuild
-
-          (cd webrtc/src/third_party/ffmpeg && ./configure ${CONFIGURE_ARGS} ) 2>&1  # 确保日志输出
-
-          # 带完整工具链配置
-          cmake -B "${WORKSPACE}/build" -S "${WORKSPACE}" \
-          -DCMAKE_C_COMPILER=clang \
-          -DCMAKE_CXX_COMPILER=clang++ \
-          -DCMAKE_C_FLAGS="${CLANG_FLAGS}" \
-          -DCMAKE_CXX_FLAGS="${CLANG_FLAGS}" \
-          -DCMAKE_SYSROOT=${PWD}/webrtc/src/build/linux/debian_bullseye_arm-sysroot \
-          -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=lld -Wl,--sysroot=${PWD}/webrtc/src/build/linux/debian_bullseye_arm-sysroot" \
-          -DCMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY \  # 跳过链接测试
-          -DCMAKE_BUILD_TYPE=${{ matrix.buildtype }} \
-          --no-warn-unused-cli
-
-          cmake --build "${WORKSPACE}/build" --verbose
-          
-
+          cmake -DWEBRTCROOT=$(pwd)/webrtc -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=${{ matrix.buildtype }} .
+          make
 
     - name: cpack 
       run: | 
