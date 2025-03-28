@@ -73,32 +73,45 @@ if (NOT EXISTS ${WEBRTCOBJS}/${CMAKE_STATIC_LIBRARY_PREFIX}webrtc${CMAKE_STATIC_
 
   EXECUTE_PROCESS(WORKING_DIRECTORY ${WEBRTCROOT}/src COMMAND gclient sync)
 
-  if(CMAKE_SYSTEM_PROCESSOR MATCHES "armv.*")
-    EXECUTE_PROCESS(WORKING_DIRECTORY ${WEBRTCROOT}/src
-                    COMMAND build/linux/sysroot_scripts/install-sysroot.py --arch=arm 
-                    RESULT_VARIABLE SYSROOT_RESULT
-                    OUTPUT_VARIABLE SYSROOT_OUTPUT
-                    ERROR_VARIABLE SYSROOT_ERROR
-                    OUTPUT_STRIP_TRAILING_WHITESPACE
-                    ERROR_STRIP_TRAILING_WHITESPACE)
-    if(NOT SYSROOT_RESULT EQUAL 0)
-      message(FATAL_ERROR "install-sysroot.py failed with exit code ${SYSROOT_RESULT}\nOutput:\n${SYSROOT_OUTPUT}\nError:\n${SYSROOT_ERROR}")
-    else()
-      message("install-sysroot.py succeeded ${SYSROOT_OUTPUT}")
-    endif()
-  elseif (CMAKE_SYSTEM_PROCESSOR MATCHES "arm64")
-    EXECUTE_PROCESS(WORKING_DIRECTORY ${WEBRTCROOT}/src 
-                    COMMAND build/linux/sysroot_scripts/install-sysroot.py --arch=arm64
-                    RESULT_VARIABLE SYSROOT_RESULT
-                    OUTPUT_VARIABLE SYSROOT_OUTPUT
-                    ERROR_VARIABLE SYSROOT_ERROR
-                    OUTPUT_STRIP_TRAILING_WHITESPACE
-                    ERROR_STRIP_TRAILING_WHITESPACE)
-    if(NOT SYSROOT_RESULT EQUAL 0)
-      message(FATAL_ERROR "install-sysroot.py failed with exit code ${SYSROOT_RESULT}\nOutput:\n${SYSROOT_OUTPUT}\nError:\n${SYSROOT_ERROR}")
-    else()
-      message("install-sysroot.py succeeded ${SYSROOT_OUTPUT}")
-    endif()
+  EXECUTE_PROCESS(WORKING_DIRECTORY ${WEBRTCROOT}/src
+                  COMMAND build/linux/sysroot_scripts/install-sysroot.py --arch=arm 
+                  RESULT_VARIABLE SYSROOT_RESULT
+                  OUTPUT_VARIABLE SYSROOT_OUTPUT
+                  ERROR_VARIABLE SYSROOT_ERROR
+                  OUTPUT_STRIP_TRAILING_WHITESPACE
+                  ERROR_STRIP_TRAILING_WHITESPACE)
+  if(NOT SYSROOT_RESULT EQUAL 0)
+    message(FATAL_ERROR "install-sysroot.py failed with exit code ${SYSROOT_RESULT}\nOutput:\n${SYSROOT_OUTPUT}\nError:\n${SYSROOT_ERROR}")
+  else()
+    message("install-sysroot.py succeeded ${SYSROOT_OUTPUT}")
+  endif()
+
+  # if(CMAKE_SYSTEM_PROCESSOR MATCHES "armv.*")
+  #   EXECUTE_PROCESS(WORKING_DIRECTORY ${WEBRTCROOT}/src
+  #                   COMMAND build/linux/sysroot_scripts/install-sysroot.py --arch=arm 
+  #                   RESULT_VARIABLE SYSROOT_RESULT
+  #                   OUTPUT_VARIABLE SYSROOT_OUTPUT
+  #                   ERROR_VARIABLE SYSROOT_ERROR
+  #                   OUTPUT_STRIP_TRAILING_WHITESPACE
+  #                   ERROR_STRIP_TRAILING_WHITESPACE)
+  #   if(NOT SYSROOT_RESULT EQUAL 0)
+  #     message(FATAL_ERROR "install-sysroot.py failed with exit code ${SYSROOT_RESULT}\nOutput:\n${SYSROOT_OUTPUT}\nError:\n${SYSROOT_ERROR}")
+  #   else()
+  #     message("install-sysroot.py succeeded ${SYSROOT_OUTPUT}")
+  #   endif()
+  # elseif (CMAKE_SYSTEM_PROCESSOR MATCHES "arm64")
+  #   EXECUTE_PROCESS(WORKING_DIRECTORY ${WEBRTCROOT}/src 
+  #                   COMMAND build/linux/sysroot_scripts/install-sysroot.py --arch=arm64
+  #                   RESULT_VARIABLE SYSROOT_RESULT
+  #                   OUTPUT_VARIABLE SYSROOT_OUTPUT
+  #                   ERROR_VARIABLE SYSROOT_ERROR
+  #                   OUTPUT_STRIP_TRAILING_WHITESPACE
+  #                   ERROR_STRIP_TRAILING_WHITESPACE)
+  #   if(NOT SYSROOT_RESULT EQUAL 0)
+  #     message(FATAL_ERROR "install-sysroot.py failed with exit code ${SYSROOT_RESULT}\nOutput:\n${SYSROOT_OUTPUT}\nError:\n${SYSROOT_ERROR}")
+  #   else()
+  #     message("install-sysroot.py succeeded ${SYSROOT_OUTPUT}")
+  #   endif()
   endif()
 
 
