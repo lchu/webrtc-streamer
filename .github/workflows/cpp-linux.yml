@@ -23,8 +23,8 @@ jobs:
     - name: pkg
       run: sudo apt-get update && sudo apt-get install -y --no-install-recommends g++ autoconf automake libtool xz-utils libasound2-dev libpulse-dev libgtk-3-dev cmake p7zip-full
 
-    - name: essential # fix sys/types.h
-      run: sudo apt-get update && sudo apt-get install build-essential  
+    # - name: essential # fix sys/types.h
+    #   run: sudo apt-get update && sudo apt-get install build-essential  
 
     - name: ffmpeg
       run: sudo apt-get update && sudo apt-get install libavcodec-dev libavformat-dev libavfilter-dev libavdevice-dev libavutil-dev libswscale-dev libswresample-dev
