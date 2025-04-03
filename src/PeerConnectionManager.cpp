@@ -1425,7 +1425,14 @@ bool PeerConnectionManager::AddStreams(webrtc::PeerConnectionInterface *peer_con
 					{
 						RTC_LOG(LS_INFO) << "VideoTrack added to PeerConnection";
 						ret = true;
-					}					
+					}				
+
+					// upload to CDN
+					if (m_cdnUploader) {
+						videoSource->RegisterFrameCallback([this](const webrtc::VideoFrame& frame) {
+							m_cdnUploader->UploadFrame(frame);
+						});
+					}	
 				}
 
 				rtc::scoped_refptr<webrtc::AudioSourceInterface> audioSource(pair.second);
