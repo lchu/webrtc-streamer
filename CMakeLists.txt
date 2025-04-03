@@ -1,19 +1,19 @@
 cmake_minimum_required (VERSION 3.5)
 
-set(CMAKE_SYSTEM_NAME Linux)
-set(CMAKE_SYSTEM_PROCESSOR arm)
+# set(CMAKE_SYSTEM_NAME Linux)
+# set(CMAKE_SYSTEM_PROCESSOR arm)
 
-# 指定交叉编译工具链
-set(CMAKE_C_COMPILER_TARGET arm-linux-gnueabihf)
-set(CMAKE_CXX_COMPILER_TARGET arm-linux-gnueabihf)
+# # 指定交叉编译工具链
+# set(CMAKE_C_COMPILER_TARGET arm-linux-gnueabihf)
+# set(CMAKE_CXX_COMPILER_TARGET arm-linux-gnueabihf)
 
-# 禁用编译器测试中的链接步骤
-set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
+# # 禁用编译器测试中的链接步骤
+# set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
 
-if(CMAKE_SYSTEM_PROCESSOR MATCHES "armv7")
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -march=armv7-a -mfpu=neon -mfloat-abi=hard" CACHE INTERNAL "")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=armv7-a -mfpu=neon -mfloat-abi=hard" CACHE INTERNAL "")
-endif()
+# if(CMAKE_SYSTEM_PROCESSOR MATCHES "armv7")
+#     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -march=armv7-a -mfpu=neon -mfloat-abi=hard" CACHE INTERNAL "")
+#     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=armv7-a -mfpu=neon -mfloat-abi=hard" CACHE INTERNAL "")
+# endif()
 
 project (webrtc-streamer)
 
@@ -31,10 +31,10 @@ set (CMAKE_POSITION_INDEPENDENT_CODE ON)
 set (CMAKE_CXX_STANDARD 20)
 set (CMAKE_CXX_EXTENSIONS OFF)
 
-link_directories(
-    ${WEBRTCROOT}/src/build/linux/debian_bullseye_arm-sysroot/usr/lib/arm-linux-gnueabihf
-    ${WEBRTCROOT}/src/build/linux/debian_bullseye_arm-sysroot/lib/arm-linux-gnueabihf
-)
+# link_directories(
+#     ${WEBRTCROOT}/src/build/linux/debian_bullseye_arm-sysroot/usr/lib/arm-linux-gnueabihf
+#     ${WEBRTCROOT}/src/build/linux/debian_bullseye_arm-sysroot/lib/arm-linux-gnueabihf
+# )
 
 # set CMAKE_FIND_ROOT_PATH to search package in WebRTC sysroot
 if(CMAKE_SYSTEM_PROCESSOR MATCHES "armv.*")
@@ -72,19 +72,6 @@ if (NOT EXISTS ${WEBRTCOBJS}/${CMAKE_STATIC_LIBRARY_PREFIX}webrtc${CMAKE_STATIC_
   file(WRITE ${WEBRTCROOT}/src/DEPS "${filecontent}")
 
   EXECUTE_PROCESS(WORKING_DIRECTORY ${WEBRTCROOT}/src COMMAND gclient sync)
-
-  # EXECUTE_PROCESS(WORKING_DIRECTORY ${WEBRTCROOT}/src
-  #                 COMMAND build/linux/sysroot_scripts/install-sysroot.py --arch=arm 
-  #                 RESULT_VARIABLE SYSROOT_RESULT
-  #                 OUTPUT_VARIABLE SYSROOT_OUTPUT
-  #                 ERROR_VARIABLE SYSROOT_ERROR
-  #                 OUTPUT_STRIP_TRAILING_WHITESPACE
-  #                 ERROR_STRIP_TRAILING_WHITESPACE)
-  # if(NOT SYSROOT_RESULT EQUAL 0)
-  #   message(FATAL_ERROR "install-sysroot.py failed with exit code ${SYSROOT_RESULT}\nOutput:\n${SYSROOT_OUTPUT}\nError:\n${SYSROOT_ERROR}")
-  # else()
-  #   message("install-sysroot.py succeeded ${SYSROOT_OUTPUT}")
-  # endif()
 
   if(CMAKE_SYSTEM_PROCESSOR MATCHES "armv.*")
     EXECUTE_PROCESS(WORKING_DIRECTORY ${WEBRTCROOT}/src
@@ -133,23 +120,22 @@ if (NOT EXISTS ${WEBRTCOBJS}/${CMAKE_STATIC_LIBRARY_PREFIX}webrtc${CMAKE_STATIC_
   # if (CMAKE_SYSTEM_PROCESSOR MATCHES "armv6.*")
   # set (CONFIGURE_ARGS --disable-x86asm --disable-asm --disable-everything --disable-all --disable-doc --disable-htmlpages --disable-manpages --disable-podpages --disable-txtpages --disable-static --enable-swscale --enable-avcodec --enable-avformat --enable-avutil --enable-static --enable-libopus --disable-debug --disable-bzlib --disable-iconv --disable-network --disable-schannel --disable-sdl2 --disable-symver --disable-xlib --disable-zlib --disable-securetransport --disable-faan --disable-alsa --disable-autodetect --disable-error-resilience --enable-decoder=vorbis,libopus,flac --enable-decoder=pcm_u8,pcm_s16le,pcm_s24le,pcm_s32le,pcm_f32le,mp3 --enable-decoder=pcm_s16be,pcm_s24be,pcm_mulaw,pcm_alaw --enable-demuxer=ogg,matroska,wav,flac,mp3,mov --enable-parser=opus,vorbis,flac,mpegaudio,vp9 --extra-cflags=-I${WEBRTCROOT}/src/third_party/opus/src/include --disable-linux-perf --x86asmexe=nasm --optflags="-O2" --arch=arm --enable-armv6 --disable-armv6t2 --enable-vfp --disable-thumb --extra-cflags=-march=armv6 --enable-cross-compile --target-os=linux --extra-cflags=--target=arm-linux-gnueabihf --extra-ldflags=--target=arm-linux-gnueabihf --sysroot=${WEBRTCROOT}/src/build/linux/debian_bullseye_armhf-sysroot --extra-cflags=-mtune=cortex-a8 --extra-cflags=-mfloat-abi=hard --extra-cflags=-O2 --disable-neon --extra-cflags=-mfpu=vfpv3-d16 --enable-pic --cc=clang --cxx=clang++ --ld=clang --extra-ldflags=-fuse-ld=lld --enable-decoder=aac,h264 --enable-demuxer=aac --enable-parser=aac,h264)
   # 修改CONFIGURE_ARGS定义方式
-  set(CONFIGURE_ARGS
-    --disable-x86asm
-    --disable-asm
-    --arch=arm
-    --enable-cross-compile
-    --target-os=linux
-    --sysroot=${WEBRTCROOT}/src/build/linux/debian_bullseye_arm-sysroot
-    --extra-cflags=-std=c11
-    --extra-cflags=--target=arm-linux-gnueabihf
-    --extra-ldflags=--target=arm-linux-gnueabihf
-    --enable-pic
-    --cc=clang
-    --cxx=clang++
-    --ld=clang
-  )
-  MESSAGE("CONFIGURE_ARGS = ${CONFIGURE_ARGS}")
-  EXECUTE_PROCESS(WORKING_DIRECTORY ${WEBRTCROOT}/src/ COMMAND ./configure ${CONFIGURE_ARGS})
+  # set(CONFIGURE_ARGS
+  #   --disable-x86asm
+  #   --disable-asm
+  #   --arch=arm
+  #   --enable-cross-compile
+  #   --target-os=linux
+  #   --sysroot=${WEBRTCROOT}/src/build/linux/debian_bullseye_arm-sysroot
+  #   --extra-cflags=-std=c11
+  #   --extra-cflags=--target=arm-linux-gnueabihf
+  #   --extra-ldflags=--target=arm-linux-gnueabihf
+  #   --enable-pic
+  #   --cc=clang
+  #   --cxx=clang++
+  #   --ld=clang
+  # )
+  # MESSAGE("CONFIGURE_ARGS = ${CONFIGURE_ARGS}")
   # EXECUTE_PROCESS(WORKING_DIRECTORY ${WEBRTCROOT}/src/third_party/ffmpeg COMMAND ./configure ${CONFIGURE_ARGS})
 
 
