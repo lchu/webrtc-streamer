@@ -48,10 +48,10 @@ void CdnUploader::InitFFmpegResources() {
 
 bool CdnUploader::LoadConfig(const Json::Value & config) {
     if (config.isMember("cdnConfig")) {
-        Json::Value filter = m_config["cdnConfig"];
+        Json::Value filter = config["cdnConfig"];
         m_cdnUrl = filter.get("url", "").asString();
-        m_width = filter.get("width", "").asString();
-        m_height = filter.get("height", "").asString();
+        m_width = std::stoi(filter.get("width", "").asString());
+        m_height = std::stoi(filter.get("height", "").asString());
     }
     
     RTC_LOG(LS_ERROR) << "Missing url in CDN config";
@@ -76,7 +76,7 @@ void CdnUploader::OnFrame(const webrtc::VideoFrame& frame) {
     av_frame->format = AV_PIX_FMT_YUV420P;
     av_frame->width = converted_frame.width();
     av_frame->height = converted_frame.height();
-    av_frame->pts = av_rescale_q(converted_frame.timestamp(), 
+    av_frame->pts = av_rescale_q(converted_frame.timestamp_us(), 
                                 {1, 90000}, m_codecContext->time_base);
     
     // 填充YUV数据
